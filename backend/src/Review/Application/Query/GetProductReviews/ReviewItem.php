@@ -9,6 +9,7 @@ final readonly class ReviewItem
     public function __construct(
         public string $id,
         public string $userId,
+        public ?string $userName,
         public int $rating,
         public string $body,
         public string $createdAt,

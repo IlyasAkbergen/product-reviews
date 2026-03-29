@@ -1,0 +1,30 @@
+/* Only styles Bootstrap cannot provide */
+
+/* Star rating: overlay coloured star on top of grey star */
+.star-overlay-container {
+  position: relative;
+  display: inline-block;
+  width: 1em;
+}
+.star-overlay-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  overflow: hidden;
+  color: #f5a623;
+}
+.star-grey { color: #ccc; }
+
+/* Star picker buttons */
+.star-btn {
+  background: none;
+  border: none;
+  font-size: 28px;
+  cursor: pointer;
+  color: #ccc;
+  line-height: 1;
+  padding: 0 2px;
+  transition: color 0.1s;
+}
+.star-btn.active,
+.star-btn:hover { color: #f5a623; }

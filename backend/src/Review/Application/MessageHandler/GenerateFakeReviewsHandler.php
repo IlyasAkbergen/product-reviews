@@ -11,7 +11,10 @@ use App\Review\Domain\Repository\ReviewRepositoryInterface;
 use App\Review\Domain\Review;
 use App\Review\Infrastructure\Message\GenerateFakeReviewsMessage;
 use App\Review\Infrastructure\Message\ReviewAddedMessage;
+use App\User\Domain\Aggregate\User;
 use App\User\Domain\Repository\UserRepositoryInterface;
+use App\User\Domain\ValueObject\EmailAddress;
+use App\User\Domain\ValueObject\UserId;
 use Faker\Generator;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
@@ -59,7 +62,8 @@ final class GenerateFakeReviewsHandler
             $userId = $userIds[array_rand($userIds)];
 
             if ($this->reviewRepository->existsByProductAndUser($productId, $userId)) {
-                continue;
+                $userId = $this->createSyntheticUserId();
+                $userIds[] = $userId;
             }
 
             $ratingValue = $this->faker->numberBetween($ratingMin, $ratingMax);
@@ -78,6 +82,20 @@ final class GenerateFakeReviewsHandler
 
             ++$created;
         }
+    }
+
+    private function createSyntheticUserId(): UserId
+    {
+        $userId = UserId::generate();
+        $this->userRepository->save(new User(
+            $userId,
+            new EmailAddress(sprintf('fake-%s@example.test', str_replace('-', '', $userId->value()))),
+            hash('sha256', $userId->value()),
+            $this->faker->name(),
+            new \DateTimeImmutable(),
+        ));
+
+        return $userId;
     }
 
     /** @return list<ProductId> */

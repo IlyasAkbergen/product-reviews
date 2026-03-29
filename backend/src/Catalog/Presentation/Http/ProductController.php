@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Catalog\Presentation\Http;
 
+use App\Catalog\Application\Query\GetCategories\GetCategoriesQuery;
 use App\Catalog\Application\Query\GetProduct\GetProductQuery;
 use App\Catalog\Application\Query\GetProducts\GetProductsQuery;
 use App\Catalog\Presentation\Http\Request\GetProductsRequest;
@@ -18,6 +19,12 @@ final class ProductController extends AbstractController
     public function __construct(
         private readonly QueryBusInterface $queryBus,
     ) {}
+
+    #[Route('/api/categories', methods: ['GET'])]
+    public function categories(): JsonResponse
+    {
+        return $this->json($this->queryBus->ask(new GetCategoriesQuery()));
+    }
 
     #[Route('/api/products', methods: ['GET'])]
     public function list(#[MapQueryString] GetProductsRequest $request = new GetProductsRequest()): JsonResponse

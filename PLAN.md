@@ -258,20 +258,21 @@ Key `product:rating:{uuid}` → Hash `{ sum, count }`
 - [x] `Catalog/Infrastructure/Console/ImportProductsConsoleCommand.php` (`app:import-products`)
 
 ### Phase 8 — Frontend (Vite + React + Redux Toolkit)
-- [ ] Vite + React + TypeScript + Redux Toolkit scaffold
-- [ ] Axios client + JWT interceptor
-- [ ] `authSlice` + login/register pages (demo credentials shown on login)
-- [ ] `ProtectedRoute` component
-- [ ] Products list page: SearchBar, CategoryFilter, PriceRangeFilter, Pagination
-- [ ] Product detail page: info, reviews list, AddReviewForm (auth guard)
-- [ ] Demo page: GenerateReviewsForm (count, ratingMin, ratingMax, productId?)
-- [ ] React Router routes setup
+- [x] Vite + React + TypeScript + Redux Toolkit scaffold (`package.json`, `vite.config.ts`, `tsconfig.json`)
+- [x] Bootstrap 5 — no custom stylesheet, only 3 star-rating rules in `index.css`
+- [x] Axios client + JWT interceptor (`src/api/client.ts`)
+- [x] `authSlice` with `rejectWithValue` error extraction; login/register pages with demo fill button
+- [x] `ProtectedRoute` component (redirects to `/login` if no token)
+- [x] Products list page: SearchBar, CategoryFilter, PriceRangeFilter, Bootstrap card grid, Pagination
+- [x] Product detail page: product info, star rating, reviews list, AddReviewForm (JWT guard, 409 handled)
+- [x] Demo page (auth-guarded): GenerateReviewsForm with count, ratingMin, ratingMax, optional productId
+- [x] React Router v6: `/`, `/login`, `/register`, `/products`, `/products/:id`, `/demo`
 
 ### Phase 9 — Seed & Polish
 - [x] `DataFixtures/AppFixtures.php`: demo user `demo@example.com` / `demo1234`
 - [x] `make seed` → runs fixtures
 - [x] `make import-products` → dispatches `ImportProductsCommand` via `app:import-products` console command
-- [ ] `make up`, `make down`, `make migrate` targets verified
+- [ ] `make up`, `make down`, `make migrate` targets verified end-to-end
 - [x] Fix `composer.json` PHP constraint: `"php": ">=8.3"` (matches Dockerfile `php:8.3-fpm`)
 
 ### Phase 10 — Documentation

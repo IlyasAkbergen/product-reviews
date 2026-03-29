@@ -2,6 +2,7 @@
 
 ## Start all services
 up:
+	@[ -f .env ] || cp .env.example .env
 	docker compose up -d --build
 
 ## Stop all services
@@ -46,6 +47,7 @@ jwt-keys:
 
 ## Full setup from scratch
 setup: up
+	@[ -f .env ] || cp .env.example .env
 	@echo "Waiting for services..."
 	@sleep 10
 	docker compose exec app composer install

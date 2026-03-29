@@ -84,4 +84,26 @@ final class DoctrineUserRepository implements UserRepositoryInterface
 
         return array_map(static fn (string $id) => UserId::fromString($id), $ids);
     }
+
+    public function findNamesByIds(array $ids): array
+    {
+        if ($ids === []) {
+            return [];
+        }
+
+        $rows = $this->em->createQueryBuilder()
+            ->select('u.id, u.name')
+            ->from(UserOrmEntity::class, 'u')
+            ->where('u.id IN (:ids)')
+            ->setParameter('ids', $ids)
+            ->getQuery()
+            ->getResult();
+
+        $map = [];
+        foreach ($rows as $row) {
+            $map[$row['id']] = $row['name'];
+        }
+
+        return $map;
+    }
 }

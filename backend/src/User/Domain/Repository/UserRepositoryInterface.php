@@ -20,4 +20,10 @@ interface UserRepositoryInterface
 
     /** @return list<UserId> */
     public function findAllIds(): array;
+
+    /**
+     * @param  string[] $ids
+     * @return array<string, string> userId => name
+     */
+    public function findNamesByIds(array $ids): array;
 }

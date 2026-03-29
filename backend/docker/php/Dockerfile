@@ -1,6 +1,7 @@
 FROM php:8.5-fpm-alpine
 
 RUN apk add --no-cache \
+    nginx \
     libzip-dev \
     libxml2-dev \
     oniguruma-dev \
@@ -29,4 +30,11 @@ WORKDIR /var/www/app
 
 COPY docker/php/php.ini /usr/local/etc/php/conf.d/custom.ini
 
-EXPOSE 9000
+# Install nginx config and entrypoint
+COPY docker/nginx/default.conf /etc/nginx/conf.d/default.conf
+COPY docker/php/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+EXPOSE 80
+
+ENTRYPOINT ["/entrypoint.sh"]

@@ -29,4 +29,6 @@ WORKDIR /var/www/app
 
 COPY docker/php/php.ini /usr/local/etc/php/conf.d/custom.ini
 
+RUN composer install --no-dev --optimize-autoloader --ignore-platform-req=ext-amqp
+
 EXPOSE 9000

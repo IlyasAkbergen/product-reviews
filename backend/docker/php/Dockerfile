@@ -22,6 +22,9 @@ RUN apk add --no-cache \
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
+# Copy existing application directory contents
+COPY . /var/www/app
+
 WORKDIR /var/www/app
 
 COPY docker/php/php.ini /usr/local/etc/php/conf.d/custom.ini

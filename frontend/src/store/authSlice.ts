@@ -1,10 +1,9 @@
 import axios from 'axios'
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import type { PayloadAction } from '@reduxjs/toolkit'
-import { loginApi, registerApi } from '../api/auth'
+import { loginApi, registerApi, logoutApi } from '../api/auth'
 import type { AuthState } from '../types'
 
-// Decode a JWT payload without a library
 function decodeJwtPayload(token: string): Record<string, unknown> {
   try {
     const payload = token.split('.')[1]
@@ -18,10 +17,19 @@ function userFromToken(token: string) {
   const payload = decodeJwtPayload(token)
   return {
     id: String(payload.id ?? ''),
-    // LexikJWT always sets `username`; our listener also adds `email`
     email: String(payload.email ?? payload.username ?? ''),
     name: String(payload.name ?? ''),
   }
+}
+
+function saveTokens(token: string, refreshToken: string) {
+  localStorage.setItem('jwt_token', token)
+  localStorage.setItem('jwt_refresh_token', refreshToken)
+}
+
+function clearTokens() {
+  localStorage.removeItem('jwt_token')
+  localStorage.removeItem('jwt_refresh_token')
 }
 
 const storedToken = localStorage.getItem('jwt_token')
@@ -31,19 +39,22 @@ const initialState: AuthState = {
 }
 
 function extractErrorMessage(err: unknown, fallback: string): string {
-  if (axios.isAxiosError<{ error?: string; detail?: string }>(err)) {
-    const msg = err.response?.data?.error ?? err.response?.data?.detail
+  if (axios.isAxiosError<{ error?: string; detail?: string; message?: string }>(err)) {
+    const d = err.response?.data
+    const msg = d?.error ?? d?.detail ?? d?.message
     if (typeof msg === 'string' && msg.length > 0) return msg
   }
   return fallback
 }
+
+interface TokenPairPayload { token: string; refreshToken: string }
 
 export const login = createAsyncThunk(
   'auth/login',
   async ({ email, password }: { email: string; password: string }, { rejectWithValue }) => {
     try {
       const { data } = await loginApi(email, password)
-      return data.token
+      return { token: data.token, refreshToken: data.refresh_token } satisfies TokenPairPayload
     } catch (err) {
       return rejectWithValue(extractErrorMessage(err, 'Login failed.'))
     }
@@ -55,39 +66,57 @@ export const register = createAsyncThunk(
   async ({ email, password, name }: { email: string; password: string; name: string }, { rejectWithValue }) => {
     try {
       await registerApi(email, password, name)
-      // Auto-login after register
       const { data } = await loginApi(email, password)
-      return data.token
+      return { token: data.token, refreshToken: data.refresh_token } satisfies TokenPairPayload
     } catch (err) {
       return rejectWithValue(extractErrorMessage(err, 'Registration failed.'))
     }
   },
 )
 
+export const logout = createAsyncThunk('auth/logout', async () => {
+  const refreshToken = localStorage.getItem('jwt_refresh_token')
+  if (refreshToken) {
+    try { await logoutApi(refreshToken) } catch { /* best-effort */ }
+  }
+  clearTokens()
+})
+
 const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
-    logout(state) {
+    // Used by the Axios interceptor when refresh fails — clears state synchronously
+    forceLogout(state) {
       state.token = null
       state.user = null
-      localStorage.removeItem('jwt_token')
+      clearTokens()
+    },
+    // Used by the Axios interceptor after a successful silent refresh
+    setAccessToken(state, action: PayloadAction<string>) {
+      state.token = action.payload
+      state.user = userFromToken(action.payload)
+      localStorage.setItem('jwt_token', action.payload)
     },
   },
   extraReducers: (builder) => {
     builder
-      .addCase(login.fulfilled, (state, action: PayloadAction<string>) => {
-        state.token = action.payload
-        state.user = userFromToken(action.payload)
-        localStorage.setItem('jwt_token', action.payload)
+      .addCase(login.fulfilled, (state, action: PayloadAction<TokenPairPayload>) => {
+        state.token = action.payload.token
+        state.user = userFromToken(action.payload.token)
+        saveTokens(action.payload.token, action.payload.refreshToken)
       })
-      .addCase(register.fulfilled, (state, action: PayloadAction<string>) => {
-        state.token = action.payload
-        state.user = userFromToken(action.payload)
-        localStorage.setItem('jwt_token', action.payload)
+      .addCase(register.fulfilled, (state, action: PayloadAction<TokenPairPayload>) => {
+        state.token = action.payload.token
+        state.user = userFromToken(action.payload.token)
+        saveTokens(action.payload.token, action.payload.refreshToken)
+      })
+      .addCase(logout.fulfilled, (state) => {
+        state.token = null
+        state.user = null
       })
   },
 })
 
-export const { logout } = authSlice.actions
+export const { forceLogout, setAccessToken } = authSlice.actions
 export default authSlice.reducer

@@ -35,6 +35,8 @@ security:
             provider: app_user_provider
 
     access_control:
+        - { path: ^/api/auth/refresh, roles: PUBLIC_ACCESS }
+        - { path: ^/api/auth/logout, roles: PUBLIC_ACCESS }
         - { path: ^/api/auth, roles: PUBLIC_ACCESS }
         - { path: ^/api/demo, roles: PUBLIC_ACCESS }
         - { path: ^/api/products/[^/]+/reviews$, roles: IS_AUTHENTICATED_FULLY, methods: [POST] }

@@ -9,8 +9,7 @@ export default function Navbar() {
   const user = useSelector((s: RootState) => s.auth.user)
 
   const handleLogout = () => {
-    dispatch(logout())
-    navigate('/login')
+    dispatch(logout()).finally(() => navigate('/login'))
   }
 
   return (

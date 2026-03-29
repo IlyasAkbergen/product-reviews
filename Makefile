@@ -3,7 +3,6 @@
 ## Start all services
 up:
 	@[ -f .env ] || cp .env.example .env
-	@[ -f frontend/.env ] || cp frontend/.env.example frontend/.env
 	docker compose up -d --build
 
 ## Stop all services
@@ -49,7 +48,6 @@ jwt-keys:
 ## Full setup from scratch
 setup: up
 	@[ -f .env ] || cp .env.example .env
-	@[ -f frontend/.env ] || cp frontend/.env.example frontend/.env
 	@echo "Waiting for services..."
 	@sleep 10
 	docker compose exec app composer install
@@ -65,3 +63,6 @@ setup: up
 ## Run tests (inside the app container)
 test:
 	docker compose exec app composer test
+
+## Setup command for deployment in Railway
+deploy: composer-install jwt-keys migrate seed import-products

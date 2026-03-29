@@ -1,32 +1,24 @@
-FROM php:8.5-fpm-alpine
+FROM dunglas/frankenphp:1-php8.5
 
-RUN apk add --no-cache \
-    libzip-dev \
-    libxml2-dev \
-    oniguruma-dev \
-    icu-dev \
-    rabbitmq-c-dev \
-    autoconf \
-    gcc \
-    g++ \
-    make \
-    && docker-php-ext-install \
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        librabbitmq-dev \
+    && install-php-extensions \
         pdo_mysql \
         zip \
         intl \
         mbstring \
         xml \
-    && pecl install amqp \
-    && docker-php-ext-enable amqp \
-    && apk del autoconf gcc g++ make
+        amqp \
+        opcache \
+    && rm -rf /var/lib/apt/lists/*
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# Copy existing application directory contents
 COPY . /var/www/app
 
 WORKDIR /var/www/app
 
 COPY docker/php/php.ini /usr/local/etc/php/conf.d/custom.ini
+COPY Caddyfile /etc/frankenphp/Caddyfile
 
-EXPOSE 9000
+EXPOSE 80

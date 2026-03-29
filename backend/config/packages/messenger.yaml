@@ -1,0 +1,15 @@
+framework:
+    messenger:
+        transports:
+            async: '%env(MESSENGER_TRANSPORT_DSN)%'
+            sync: 'sync://'
+
+        routing:
+            App\Review\Infrastructure\Message\ReviewAddedMessage: async
+            App\Review\Infrastructure\Message\GenerateFakeReviewsMessage: async
+
+when@test:
+    framework:
+        messenger:
+            transports:
+                async: 'sync://'

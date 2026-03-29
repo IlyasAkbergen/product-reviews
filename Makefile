@@ -1,0 +1,63 @@
+.PHONY: up down build restart logs shell seed import-products migrate
+
+## Start all services
+up:
+	docker compose up -d --build
+
+## Stop all services
+down:
+	docker compose down
+
+## Build images without cache
+build:
+	docker compose build --no-cache
+
+## Restart all services
+restart:
+	docker compose down && docker compose up -d
+
+## Follow logs
+logs:
+	docker compose logs -f
+
+## PHP shell
+shell:
+	docker compose exec app sh
+
+## Run DB migrations
+migrate:
+	docker compose exec app php bin/console doctrine:migrations:migrate --no-interaction
+
+## Load fixtures (demo user + sample data)
+seed:
+	docker compose exec app php bin/console doctrine:fixtures:load --no-interaction
+
+## Import products from dummyjson.com
+import-products:
+	docker compose exec app php bin/console app:import-products
+
+## Composer install
+composer-install:
+	docker compose exec app composer install
+
+## Generate JWT keys
+jwt-keys:
+	docker compose exec app php bin/console lexik:jwt:generate-keypair --overwrite
+
+## Full setup from scratch
+setup: up
+	@echo "Waiting for services..."
+	@sleep 10
+	docker compose exec app composer install
+	docker compose exec app php bin/console lexik:jwt:generate-keypair --overwrite
+	docker compose exec app php bin/console doctrine:migrations:migrate --no-interaction
+	docker compose exec app php bin/console doctrine:fixtures:load --no-interaction
+	docker compose exec app php bin/console app:import-products
+	@echo ""
+	@echo "✅ Setup complete! App running at http://localhost:8080"
+	@echo "   RabbitMQ management: http://localhost:15672 (guest/guest)"
+	@echo "   Demo user: demo@example.com / demo1234"
+
+## Run tests (inside the app container)
+test:
+	docker compose exec app composer test

@@ -14,8 +14,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Prepare backend environment
+        run: cp backend/.env.example backend/.env
+
       - name: Start services
         run: make up
+
+      - name: Install Composer dependencies
+        run: docker compose exec -T app composer install --no-interaction --prefer-dist
 
       - name: Prepare test database
         run: |

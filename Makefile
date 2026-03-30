@@ -1,4 +1,4 @@
-.PHONY: up down build restart logs shell seed import-products migrate
+.PHONY: up down build restart logs shell migrate seed import-products composer-install jwt-keys copy-env setup test deploy
 
 ## Start all services
 up:
@@ -45,9 +45,15 @@ composer-install:
 jwt-keys:
 	docker compose exec app php bin/console lexik:jwt:generate-keypair --overwrite
 
-## Full setup from scratch
-setup: up
+# copy .env.example to .env if it doesn't exist, then run the full setup
+copy-env:
 	@[ -f .env ] || cp .env.example .env
+	@[ -f backend/.env ] || cp backend/.env.example backend/.env
+
+## Full setup from scratch
+setup:
+	@$(MAKE) copy-env
+	@$(MAKE) up
 	@echo "Waiting for services..."
 	@sleep 10
 	docker compose exec app composer install
@@ -56,7 +62,8 @@ setup: up
 	docker compose exec app php bin/console doctrine:fixtures:load --no-interaction
 	docker compose exec app php bin/console app:import-products
 	@echo ""
-	@echo "✅ Setup complete! App running at http://localhost:8080"
+	@echo "✅ Setup complete! Backend running at http://localhost:8080"
+	@echo "   Frontend running at http://localhost:5173"
 	@echo "   RabbitMQ management: http://localhost:15672 (guest/guest)"
 	@echo "   Demo user: demo@example.com / demo1234"
 

@@ -5,7 +5,7 @@ set -e
 
 cp .env.example .env
 
-composer install --no-dev --no-interaction
+composer install --no-interaction
 
 JWT_DIR="config/jwt"
 mkdir -p "$JWT_DIR"

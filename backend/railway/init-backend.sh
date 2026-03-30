@@ -1,17 +1,20 @@
-# Make sure this file has executable permissions, run `chmod +x railway/init-app.sh`
+# Make sure this file has executable permissions, run `chmod +x railway/init-backend.sh`
 
 # Exit the script if any command fails
 set -e
 
+cp .env.example .env
+
 composer install --no-dev --no-interaction
 
-mkdir -p ../config/jwt
-if [ -n "$JWT_PRIVATE_KEY_BASE64" ] && [ -n "$JWT_PUBLIC_KEY_BASE64" ]; then
-    echo "$JWT_PRIVATE_KEY_BASE64" | base64 -d > ../config/jwt/private.pem
-    echo "$JWT_PUBLIC_KEY_BASE64" | base64 -d > ../config/jwt/public.pem
-else
-    php bin/console lexik:jwt:generate-keypair --overwrite
-fi
+JWT_DIR="config/jwt"
+mkdir -p "$JWT_DIR"
+
+printf '%s' "$JWT_PRIVATE_KEY_BASE64" | base64 -d > "$JWT_DIR/private.pem"
+printf '%s' "$JWT_PUBLIC_KEY_BASE64" | base64 -d > "$JWT_DIR/public.pem"
+
+chmod 600 "$JWT_DIR/private.pem"
+chmod 644 "$JWT_DIR/public.pem"
 
 php bin/console doctrine:migrations:migrate --no-interaction
 

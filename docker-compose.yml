@@ -71,7 +71,7 @@ services:
       MESSENGER_TRANSPORT_DSN: "amqp://${RABBITMQ_USER:-guest}:${RABBITMQ_PASSWORD:-guest}@rabbitmq:5672/%2f/messages"
       JWT_SECRET_KEY: "%kernel.project_dir%/config/jwt/private.pem"
       JWT_PUBLIC_KEY: "%kernel.project_dir%/config/jwt/public.pem"
-      JWT_PASSPHRASE: ${JWT_PASSPHRASE:-your_passphrase}
+      JWT_PASSPHRASE: ${JWT_PASSPHRASE:-secret}
     depends_on:
       mysql:
         condition: service_healthy
@@ -99,7 +99,7 @@ services:
       MESSENGER_TRANSPORT_DSN: "amqp://${RABBITMQ_USER:-guest}:${RABBITMQ_PASSWORD:-guest}@rabbitmq:5672/%2f/messages"
       JWT_SECRET_KEY: "%kernel.project_dir%/config/jwt/private.pem"
       JWT_PUBLIC_KEY: "%kernel.project_dir%/config/jwt/public.pem"
-      JWT_PASSPHRASE: ${JWT_PASSPHRASE:-your_passphrase}
+      JWT_PASSPHRASE: ${JWT_PASSPHRASE:-secret}
     depends_on:
       mysql:
         condition: service_healthy
